@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#f5f7fb">
+    <title>HT Killed Articles Checker</title>
+    <link rel="stylesheet" href="resources/css/styles.css">
+</head>
+<body>
+    <main class="app-shell">
+        <header class="topbar">
+            <a class="brand" href="#" aria-label="HT Killed Articles Checker home">
+                <span class="brand-mark">HT</span>
+                <span class="brand-copy"><strong>Hindustan Times</strong><span>EDITORIAL TOOLS</span></span>
+            </a>
+            <span class="connection"><span class="connection-dot"></span> API proxy ready</span>
+        </header>
+
+        <section class="intro">
+            <div class="eyebrow">ARTICLE STATUS MONITOR</div>
+            <h1>HT Killed Articles Checker</h1>
+            <p>Check article status in bulk. Paste URLs or upload a file to get started.</p>
+        </section>
+
+        <section class="panel input-panel" aria-labelledby="input-heading">
+            <div class="section-heading">
+                <div><span class="step">01</span><h2 id="input-heading">Add article URLs</h2></div>
+                <span class="supporting">One URL per line · 400+ URLs supported</span>
+            </div>
+            <label class="sr-only" for="urls">Article URLs, one per line</label>
+            <textarea id="urls" placeholder="Paste article URLs here, one per line&#10;https://www.hindustantimes.com/india-news/example-article-101788605623110.html"></textarea>
+            <div class="input-footer">
+                <div class="input-tools">
+                    <label class="upload-button" for="file-input">
+                        <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 13V3m0 0L6.5 6.5M10 3l3.5 3.5M4 12.5v3A1.5 1.5 0 0 0 5.5 17h9a1.5 1.5 0 0 0 1.5-1.5v-3"/></svg>
+                        Upload CSV or TXT
+                    </label>
+                    <input id="file-input" type="file" accept=".csv,.txt,text/csv,text/plain" hidden>
+                    <span id="url-count" class="url-count">0 URLs</span>
+                    <label class="concurrency-control" for="concurrency-select">Parallel requests
+                        <select id="concurrency-select"><option value="5">5</option><option value="10" selected>10</option><option value="15">15</option><option value="20">20</option></select>
+                    </label>
+                </div>
+                <div class="actions">
+                    <button id="clear-button" class="button button-quiet" type="button">Clear all</button>
+                    <button id="check-button" class="button button-primary" type="button">
+                        <span>Check articles</span>
+                        <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12m-5-5 5 5-5 5"/></svg>
+                    </button>
+                </div>
+            </div>
+            <div id="input-error" class="notice notice-error" role="alert" hidden></div>
+            <div id="progress-section" class="progress-section" hidden>
+                <div class="progress-copy"><span id="progress-label">Preparing…</span><span id="progress-percentage">0%</span></div>
+                <div class="progress-track" role="progressbar" aria-label="Article checking progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="progress-bar" class="progress-bar"></div></div>
+                <div class="progress-footer"><span id="progress-detail">0 / 0 checked</span><button id="cancel-button" type="button">Cancel checking</button></div>
+            </div>
+        </section>
+
+        <section id="results-section" aria-labelledby="results-heading" hidden>
+            <div class="results-title">
+                <div><span class="step">02</span><h2 id="results-heading">Results overview</h2></div>
+                <div class="export-actions">
+                    <button id="copy-urls-button" class="button button-outline" type="button">Copy killed URLs</button>
+                    <button id="copy-ids-button" class="button button-outline" type="button">Copy killed IDs</button>
+                    <button id="export-killed-button" class="button button-outline" type="button">Export killed CSV</button>
+                    <button id="export-all-button" class="button button-dark" type="button">Export all CSV <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3v10m0 0 3.5-3.5M10 13 6.5 9.5M4 14v2.5A.5.5 0 0 0 4.5 17h11a.5.5 0 0 0 .5-.5V14"/></svg></button>
+                </div>
+            </div>
+
+            <div class="metrics-grid">
+                <article class="metric-card"><span>Total URLs</span><strong id="metric-total">0</strong><small>submitted</small></article>
+                <article class="metric-card"><span>Successfully checked</span><strong id="metric-checked">0</strong><small>API responses received</small></article>
+                <article class="metric-card metric-killed"><span>Killed articles</span><strong id="metric-killed">0</strong><small>confirmed killed</small></article>
+                <article class="metric-card metric-alive"><span>Not killed</span><strong id="metric-not-killed">0</strong><small>confirmed active</small></article>
+                <article class="metric-card metric-unknown"><span>Unknown</span><strong id="metric-unknown">0</strong><small>unverified status</small></article>
+                <article class="metric-card metric-error"><span>API errors</span><strong id="metric-errors">0</strong><small>request failed</small></article>
+                <article class="metric-card metric-rate"><span>Killed percentage</span><strong id="metric-percentage">0%</strong><small>of classified articles</small></article>
+            </div>
+
+            <div class="panel table-panel">
+                <div class="table-toolbar">
+                    <div><h3>Article results</h3><span id="table-count" class="table-count">0 articles</span></div>
+                    <div class="table-filters">
+                        <label class="search-box"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.7" cy="8.7" r="5.7"/><path d="m13 13 4 4"/></svg><input id="search-input" type="search" placeholder="Search URL or ID" aria-label="Search results"></label>
+                        <label class="sr-only" for="status-filter">Filter by status</label>
+                        <select id="status-filter"><option value="ALL">All statuses</option><option value="KILLED">Killed</option><option value="NOT KILLED">Not killed</option><option value="UNKNOWN / UNVERIFIED">Unknown</option><option value="API ERROR">API error</option></select>
+                    </div>
+                </div>
+                <div class="table-scroll">
+                    <table>
+                        <thead><tr><th><button class="sort-button" data-sort="number" type="button">S. No. <span></span></button></th><th>Article URL</th><th><button class="sort-button" data-sort="id" type="button">Article ID <span></span></button></th><th><button class="sort-button" data-sort="status" type="button">Status <span></span></button></th><th>API response / details</th></tr></thead>
+                        <tbody id="results-body"></tbody>
+                    </table>
+                    <div id="empty-results" class="empty-results" hidden>No articles match your search.</div>
+                </div>
+                <div class="table-note"><span class="status-dot dot-killed"></span> Killed <span class="status-dot dot-alive"></span> Not killed <span class="status-dot dot-unknown"></span> Unknown <span class="status-dot dot-error"></span> API error <span class="note-right">Results stay in the order you submitted them.</span></div>
+            </div>
+        </section>
+
+        <footer><span>HT Killed Articles Checker</span><span>Bulk article verification tool</span></footer>
+        <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    </main>
+    <script src="resources/js/app.js" defer></script>
+</body>
+</html>
